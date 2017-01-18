@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block page-content %}
+
+{% load staticfiles %}
+<link href="{% static 'css/new_patient.css' %}" rel="stylesheet">
+<script src="{% static 'js/jquery.cookie.js' %}" ></script>
+<!-- include popup -->
+<link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}"> 
+<script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>
+<!-- Date picker -->
+<link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.min.css' %}"> 
+<script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+
+<div class="container">
+	<h3 class="section-title">New Patient</h3>
+	<p>Enter the full name OR phone number of the patient. If he or she has visited before, the record will show up. If not, you can create a new profile for them. </p>
+	<input type="text" class="form-control" id="patient_name" placeholder="Mohamed Essam etc..">
+	
+	<div id="results_box"></div>
+	<div id="no_results" style="display:none;">
+		<center>
+			<p id="no_results_text">Can't find who you're looking for?</p>
+			<button href="#patient_form" id="new_patient_button" class="btn btn-default btn-lg"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Create profile for <span id="new_patient_name"></span></button>
+		</center>
+	</div>
+
+	<!-- popup form -->
+	<form id="patient_form" name="" class="white-popup-block mfp-hide">
+		<div id="mainform-box">
+			<h1><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> New Profile</h1>
+			<fieldset style="border:0;">
+				<label>Full Name</label>
+				<div id="name_error" class="form_error"></div>
+				<input type="text"     class="form-control" id="fullname" name="fullname" placeholder="Mohamed Ahmed Mohamed Ahmed Mostafa etc..">
+				<label>Gender</label></br>
+				<div id="gender_error" class="form_error"></div>
+				<div class="btn-group" data-toggle="buttons">
+				  <label id="male_label" class="btn btn-default">
+				    <input type="radio" name="male" id="male" autocomplete="off" > Male
+				  </label>
+				  <label id="female_label" class="btn btn-default">
+				    <input type="radio" name="female" id="female" autocomplete="off"> Female
+				  </label>
+				</div></br></br>
+				
+				<label>Date of Birth</label></br>
+				<div id="dob_error" class="form_error"></div>
+				<div id="date_of_birth" style="height: 300px;"></div>
+				<input id="date_of_birth_input" name="date_of_birth" type="hidden" value=""/>
+				<label>Phone Number</label>
+				<div id="phone_error" class="form_error"></div>
+				<input type="text" style="font-family:sans-serif;" onkeypress='return event.charCode >= 48 && event.charCode <= 57' class="form-control" id="phonenumber" name="phonenumber" placeholder="034259366 etc.."></input>
+				<button id="new_profile_submit" type="submit" class="btn btn-default btn-lg">Submit</button>
+			</fieldset>
+		</div>
+		<div id="success-box" style="display:none;">
+			<h1 style="color:green;">Success!</h1>
+			<h4>Patient profile has been created and a visit has been registered.</h4>
+			<h4><a href="{% url 'paciente' %}">Click here to see the current visitors page</a></h4>
+		</div>
+		<div id="fail-box" style="display:none;">
+			<h1 style="color:red;">Fail</h1>
+			<h4>Uh oh! It looks like something went wrong. You should contact an administrator.</h4>
+			<p id="fail-message"></p>
+		</div>
+	</form>
+	<!-- End Popup form -->
+
+	<!-- Confirmation form -->
+	<form id="confirm_form" name="" class="white-popup-block mfp-hide">
+		<div id="confirm-box">
+			<h1>Confirm Visit</h1>
+			<h4>Clicking <span style="color:green;">Yes</span> will confirm this patient as a current visitor</h4>
+			<p id="patient_info_name"></p>
+			<p id="patient_info_gender"></p>
+			<p id="patient_info_dob"></p>
+			<p id="patient_info_phone"></p>
+			<button id="confirm_visit_button" class="btn btn-default btn-lg">Yes</button>
+			<button id="no_button" class="btn btn-default btn-lg">No</button>
+		</div>
+		<div id="loading-box" style="display:none;">
+			<h1>Loading..</h1>
+		</div>
+		<div id="confirm-exists-box" style="display:none;">
+			<h1 style="color:red;">Error</h1>
+			<h4>A visit for this patient already exists.</h4>
+			<h4><a href="{% url 'paciente' %}">Click here to see the current visitors page</a></h4>
+		</div>
+		<div id="confirm-success-box" style="display:none;">
+			<h1 style="color:green;">Success!</h1>
+			<h4>A visit has been registered.</h4>
+			<h4><a href="{% url 'paciente' %}">Click here to see the current visitors page</a></h4>
+		</div>
+		<div id="confirm-fail-box" style="display:none;">
+			<h1 style="color:red;">Fail</h1>
+			<p id="confirm-fail-message"></p>
+		</div>
+	</form>
+	<!-- End confirmation form -->
+
+</div>
+
+<script src="{% static 'js/spin.min.js' %}"></script>
+<script>
+$(function(){
+	
+	//Initialize popup
+	$('#new_patient_button').magnificPopup({type:'inline'})
+	$('#date_of_birth').datepicker({}).on("changeDate", function(e){
+        var dateObj = {}
+        dateObj.year = e.date.getFullYear();
+        dateObj.month = e.date.getMonth() + 1;
+        dateObj.day = e.date.getDate();
+        $('#date_of_birth_input').val(JSON.stringify(dateObj));
+    });
+	var spinner = new Spinner().spin()
+	///////////FOR CSRF PROTECTION
+	var csrftoken = $.cookie('csrftoken');
+	function csrfSafeMethod(method) {
+		// these HTTP methods do not require CSRF protection
+	    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+	}
+	$.ajaxSetup({
+	    beforeSend: function(xhr, settings) {
+	        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+	            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	        }
+	    }
+	});
+	////////////END CSRF PROTECTION
+	////////////New profile form
+	$('#new_profile_submit').click(function(e){
+		var disabled = $('#new_profile_submit').hasClass("disabled");
+		var errors = false;
+		//Clear errors
+		$('#name_error').html("")
+		$('#gender_error').html("")
+		$('#dob_error').html("")
+		$('#phone_error').html("")
+		//Check for errors
+		//Check that the name is not empty
+		if($('#fullname').val() == ""){
+			$('#name_error').html("This field is required")
+			errors = true;
+		}
+		///Check that a gender is selected
+		if(!$('#male_label').hasClass("active") && !$('#female_label').hasClass("active")){
+			$('#gender_error').html("Please selected a gender")
+			errors = true;
+		}
+		//Check that a date is selected
+		if($('#date_of_birth_input').val() == ""){
+			$('#dob_error').html("Please select a date")
+			errors = true;
+		}
+		//Check that the phone is not empty
+		if($('#phonenumber').val() == ""){
+			$('#phone_error').html("This field is required")
+			errors = true;
+		}
+		//If no errors, 
+		if(!errors && !disabled){
+			//make submit button wait for response
+			$('#new_profile_submit').html("Waiting...")
+			$('#new_profile_submit').toggleClass("disabled")
+			//post request to create new patient
+			var data = {};
+			data['fullname'] = $('#fullname').val()
+			data['date_of_birth'] = $('#date_of_birth_input').val()
+			if($('#male_label').hasClass("active")) data['male'] = true; else data['female'] = true;
+			data['phonenumber'] = $('#phonenumber').val()
+			$.post("{% url 'paciente' %}",data,GetResponse).fail(FailMessage);
+		}
+		function FailMessage(data){
+			ResetForm()
+			$('#mainform-box').css("display","none")
+			$('#fail-box').css("display","block")
+			$('#fail-message').html(data.responseText);
+			console.log(data)
+		}
+		function ConfirmLatestVisit(data){
+			$('#mainform-box').css("display","none")
+			$('#success-box').css("display","block")
+		}
+		function GetResponse(data){
+			ResetForm()
+			if(data == "success"){
+				//Creating a patient automatically registers them for a new visit
+				$.post("{% url 'paciente' %}",{'id':-1},ConfirmLatestVisit).fail(FailMessage);
+			} else {
+				$('#mainform-box').css("display","none")
+				$('#fail-box').css("display","block")
+				$('#fail-message').html(data);
+			}
+		}
+		e.preventDefault();
+		return false;
+	})
+	////////////End new profile form
+	function ResetForm(){
+		$('#mainform-box').css("display","block")
+		$('#success-box').css("display","none")
+		$('#fail-box').css("display","none")
+		//Clear form stuff
+		$('#date_of_birth_input').val(""); $('#date_of_birth').datepicker('update', '');
+		$('#phonenumber').val("")
+		if($('#male_label').hasClass("active")) $('#male_label').toggleClass("active")
+		if($('#female_label').hasClass("active")) $('#female_label').toggleClass("active")
+		if($('#new_profile_submit').hasClass("disabled")){
+			$('#new_profile_submit').html("Submit")
+			$('#new_profile_submit').toggleClass("disabled")
+		}
+	}
+	function ResetEverything(){
+		$('#no_results').css('display','none');
+		$('#results_box').empty()
+	}
+	$('#patient_name').keyup(function () { 
+		var text = $('#patient_name').val();
+		$('#new_patient_name').html(text)
+		$("#fullname").val(text)
+		ResetEverything();
+		ResetForm()
+		//Search for this patient in the database
+		if(text != ''){
+			$.post("{% url 'paciente' %}",{'search':text},RetrieveResults)
+			$('#results_box').append(spinner.el);
+		}
+	});
+	function ShowPatientInfo(patient){
+		$('#patient_info_name').html(patient.name);
+		$('#patient_info_gender').html(patient.sex);
+		$('#patient_info_dob').html(patient.dob.day + "/" + patient.dob.month + "/" + patient.dob.year);
+		$('#patient_info_phone').html(patient.phone);
+	}
+	var currentPatient;
+	function ResetConfirmBox(){
+		$('#confirm-box').css("display","none")
+		$('#loading-box').css("display","none")
+		$('#confirm-success-box').css("display","none")
+		$('#confirm-fail-box').css("display","none")
+	}
+	function RetrieveResults(jsondata){
+		patientArray = jsondata;
+		$('#results_box').empty()
+		if(patientArray.length == 0){
+			//No results, create new patient?
+			$('#no_results').css('display','block');
+		} else {
+			//Show list of patients
+			// Create elements of each patient and make them clickable
+			for(var i=0;i<patientArray.length;i++){
+				var patientData = patientArray[i];
+				var formattedDate = patientData.dob.day + "/" + patientData.dob.month + "/" + patientData.dob.year;
+				var patientTag = "<button data-index='"+String(i)+"' href='#confirm_form' class='btn btn-default btn-lg patient_list_item'>" + patientData.name + "</br>Birth: <b>" + formattedDate + "</b></button>"
+				$('#results_box').append(patientTag);
+			}
+			$('.patient_list_item').magnificPopup({type:'inline'})
+			ResetConfirmBox()
+			$('#confirm-box').css("display","block")
+			//Show create new patient button anyway
+			$('#no_results').css('display','block');
+			// No closes the form
+			$('#no_button').click(function(e){
+				//Close popup
+				$.magnificPopup.close();
+				e.preventDefault();
+				return false;
+			})
+			
+			// Show patient info in that form 
+			$('.patient_list_item').click(function(e){
+				var element = $(e.target);
+				if($(e.target).get(0).tagName != "BUTTON"){
+					element = $(e.target).parent()
+				}
+				currentPatient = patientArray[element.data('index')];
+				ShowPatientInfo(currentPatient);
+			})
+			
+		}
+	}
+	// Yes registers a visit
+	
+	})
+	function ConfirmResponse(data){
+		if(data == "success"){
+			ResetConfirmBox()
+			$('#confirm-success-box').css("display","block")
+		} else if(data == "exists") {
+			ResetConfirmBox()
+			$('#confirm-exists-box').css("display","block")
+		}
+	}
+	function FailConfirm(data){
+		console.log(data)
+		ResetConfirmBox()
+		$('#confirm-fail-box').css("display","block")
+		$('#confirm-fail-message').html(data.responseText)
+	}
+})
+</script>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "index2.html" %}
+{% block page-content %}
+<div class="row">
+    
+    <div class="col-md-3">
+
+          <!-- Profile Image -->
+          <div class="box box-primary">
+            <div class="box-body box-profile">
+             <!--  <img class="profile-user-img img-responsive img-circle" src="../../../dist/img/user4-128x128.jpg" alt="User profile picture">
+ -->
+              <h3 class="profile-username text-center">{{ paciente.nombre }} {{ paciente.apellido_paterno }} {{ paciente.apellido_materno }}</h3>
+
+              <p class="text-muted text-center">Expediente: {{paciente.id}}</p>
+
+              <ul class="list-group list-group-unbordered">
+                <li class="list-group-item">
+                  <b>Edad</b> <a class="pull-right">{{ paciente.edad }}</a>
+                </li>
+                <li class="list-group-item">
+                  <b>Sexo</b> <a class="pull-right">{{ paciente.sexo }}</a>
+                </li>
+                <li class="list-group-item">
+                  <b>Peso</b> <a class="pull-right">{{ paciente.peso }}</a>
+                </li>
+              </ul>
+            </div>
+            <!-- /.box-body -->
+          </div>
+    </div>
+        
+
+
+    <div class="col-md-9">
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li><a href="#signos_vitales_tab" data-toggle="tab">Signos Vitales</a></li> 
+            
+               <li><a href="#medicamentos_tab" data-toggle="tab">Medicamentos</a></li>
+                <li><a href="#otras_ordenes_tab" data-toggle="tab">Otras Ordenes Terapeuticas</a></li>
+             <!--  <li><a href="#tab_4" data-toggle="tab">Tab 3</a></li>
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  Dropdown <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Action</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Another action</a></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Something else here</a></li>
+                  <li role="presentation" class="divider"></li>
+                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Separated link</a></li>
+                </ul>
+              </li> -->
+              
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="signos_vitales_tab">
+                <!-- <a href="{% url 'signos_vitales' paciente.id %}"><button type="button" class="btn btn-default pull-right"><i class="fa fa-plus"></i>Nuevo</button></a> -->
+                <button type="button" class="btn btn-default pull-right" data-toggle="modal"         data-target="#signos_vitales">
+                  <i class="fa fa-plus"></i>Nuevo
+                </button>
+                {% if signos_vitales %}
+                    {% for signo in signos_vitales %}
+                    <div> <label>Fecha: </label> {{signo.fecha}} </div>
+                    <div> <label>Hora: </label> {{signo.hora}}</div>
+                    <div> <label>Tension arterial: </label> {{signo.tension_arterial}}</div>
+                    <div> <label>Frecuencia cardiaca: </label> {{signo.frecuencia_cardiaca}}</div>
+                    <div> <label>Frecuencia respiratoria: </label> {{signo.frecuencia_respiratoria}}</div>
+                    <div> <label>Temperatura: </label> {{signo.temperatura}}</div>
+                    <div> <label>Notas: </label> {{signo.notas}}</div>
+                    <hr>
+                    {% endfor %}
+                {% endif %}
+                
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="medicamentos_tab">
+               <!--  <a href="{% url 'medicamento' paciente.id %}"><button type="button" class="btn btn-default pull-right"><i class="fa fa-plus"></i>Nuevo</button></a> -->
+               <button type="button" class="btn btn-default pull-right" data-toggle="modal"         data-target="#medicamento">
+                  <i class="fa fa-plus"></i>Nuevo
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+                {% if medicamentos %}
+                    {% for medicamento in medicamentos %}
+                    <div> <label> nombre: </label> {{medicamento.nombre}}</div>
+                    <div> <label> tipo: </label> {{medicamento.tipo}}</div>
+                    <div> <label> dosis: </label> {{medicamento.dosis}}</div>
+                    <div> <label> frecuencia: </label> {{medicamento.frecuencia}}</div>
+                    <div> <label> via: </label> {{medicamento.via}}</div>
+                    <div> <label> nota: </label> {{medicamento.nota}}</div>
+                    <hr>
+                    {% endfor %}
+                {% endif %}
+         
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="otras_ordenes_tab">
+               <!--  <a href="{% url 'otras_ordenes' paciente.id %}"><button type="button" class="btn btn-default pull-right"><i class="fa fa-plus"></i>Nuevo</button></a>
+ -->
+                <button type="button" class="btn btn-default pull-right" data-toggle="modal"         data-target="#otras_ordenes">
+                  <i class="fa fa-plus"></i>Nuevo
+                </button>
+
+                {% if otras_ordenes %}
+                    {% for orden in otras_ordenes%}
+                    <div> <label>fecha: </label> {{orden.fecha}}</div>
+                    <div> <label>hora: </label> {{orden.hora}}</div>
+                    <div> <label>dieta: </label> {{orden.dieta}}</div>
+                    <div> <label>actividad_fisica: </label> {{orden.actividad_fisica}}</div>
+                    <div> <label>curas: </label> {{orden.curas}}</div>
+                    <div> <label>oxigeno: </label> {{orden.oxigeno}}</div>
+                    <div> <label>fisioterapia respiratoria: </label> {{orden.fisioterapia_respiratoria}}</div>
+                    <div> <label>sondas drenajes: </label> {{orden.sondas_drenajes}}</div>
+                    <div> <label>estudios laboratorio diagnostico: </label> {{orden.estudios_lab_diagnostico}}</div>
+                    <hr>
+                    {% endfor %}
+                {% endif %}
+
+              </div>
+                <div class="tab-pane" id="tab_4">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+                when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                It has survived not only five centuries, but also the leap into electronic typesetting,
+                remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset
+                sheets containing Lorem Ipsum passages, and more recently with desktop publishing software
+                like Aldus PageMaker including versions of Lorem Ipsum.
+              </div>
+              <!-- /.tab-pane -->
+            </div>
+            <!-- /.tab-content -->
+          </div>
+    </div>
+
+</div>
+{% for each_form, name in form_list %}
+  {% include "form2.html" %}
+{% endfor %}
+{% endblock %}
+
+
+

@@ -1,0 +1,11 @@
+{% extends "index2.html %"}
+{% block page-content %}
+
+<h1>To-do list status report</h1>  
+
+{% for item in items %}  
+
+    <h2>{{ item.titulo }}</h2> | <a href="{% url 'borrar_tarea' item.pk %}"><p> delete</p></a>
+
+{% endfor %}  
+{% endblock %}

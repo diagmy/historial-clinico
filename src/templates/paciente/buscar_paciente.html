@@ -1,0 +1,10 @@
+{% extends "index2.html" %}
+{% block page-content %}
+<div class="container">
+	{% for paciente in pacientes %}
+		<div>
+			{{ paciente.nombre }} {{ paciente.id}}
+		</div>
+	{% endfor %}
+</div>
+{% endblock %}
